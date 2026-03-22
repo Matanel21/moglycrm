@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { 
   LayoutDashboard, Users, Package, ShoppingCart, 
-  Contact, Menu, X, ChevronLeft, FlaskConical, Settings
+  Contact, Menu, X, ChevronLeft, FlaskConical, Settings, BarChart2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
