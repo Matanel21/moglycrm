@@ -9,34 +9,17 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ArrowRight, Phone, Mail, MapPin, Hash, User, Save, Bell, Star } from "lucide-react";
-import { differenceInDays, parseISO, format, addDays } from "date-fns";
+import { differenceInDays, parseISO, format } from "date-fns";
+import { computePersonalForecast } from "@/lib/customerForecast";
 
 // ── helpers ────────────────────────────────────────────────
 function computeStats(docs) {
-  if (!docs.length) return { totalOrders: 0, totalRevenue: 0, avgOrder: 0, daysSinceLast: null, avgDaysBetween: null, nextPurchase: null, lastDoc: null };
+  if (!docs.length) return { totalOrders: 0, totalRevenue: 0, avgOrder: 0, lastDoc: null };
   const sorted = [...docs].sort((a, b) => (b.document_date || "").localeCompare(a.document_date || ""));
   const lastDoc = sorted[0];
-  const daysSinceLast = lastDoc.document_date ? differenceInDays(new Date(), parseISO(lastDoc.document_date)) : null;
   const totalRevenue = docs.reduce((s, d) => s + (d.total_to_pay || 0), 0);
   const avgOrder = docs.length ? Math.round(totalRevenue / docs.length) : 0;
-
-  let avgDaysBetween = null;
-  let nextPurchase = null;
-  if (sorted.length >= 3) {
-    const gaps = [];
-    for (let i = 0; i < sorted.length - 1; i++) {
-      if (sorted[i].document_date && sorted[i + 1].document_date) {
-        gaps.push(differenceInDays(parseISO(sorted[i].document_date), parseISO(sorted[i + 1].document_date)));
-      }
-    }
-    if (gaps.length) {
-      avgDaysBetween = Math.round(gaps.reduce((s, g) => s + g, 0) / gaps.length);
-      if (lastDoc.document_date) {
-        nextPurchase = addDays(parseISO(lastDoc.document_date), avgDaysBetween);
-      }
-    }
-  }
-  return { totalOrders: docs.length, totalRevenue, avgOrder, daysSinceLast, avgDaysBetween, nextPurchase, lastDoc };
+  return { totalOrders: docs.length, totalRevenue, avgOrder, lastDoc };
 }
 
 function getTopProducts(docs, limit = 5) {

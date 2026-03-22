@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Search, ChevronLeft, Star } from "lucide-react";
 import PageHeader from "@/components/shared/PageHeader";
 import { useNavigate } from "react-router-dom";
-import { differenceInDays, parseISO } from "date-fns";
+import { computePersonalForecast, getForecastStatus } from "@/lib/customerForecast";
 
 const TYPE_COLORS = {
   "חנות חיות":    "bg-blue-100 text-blue-700 border-blue-200",
@@ -24,36 +24,36 @@ function TypeBadge({ type }) {
   );
 }
 
-function DaysCell({ days }) {
-  if (days === null) return <span className="text-muted-foreground text-xs">אין רכישות</span>;
-  const cls = days >= 60 ? "text-red-600 font-semibold" : days >= 45 ? "text-amber-600 font-semibold" : "text-foreground";
-  return <span className={cls}>{days} ימים</span>;
+function ForecastStatusBadge({ forecast }) {
+  const status = getForecastStatus(forecast);
+  if (status === "no_data") return <span className="text-xs text-muted-foreground">אין נתונים</span>;
+  if (status === "on_time") return <span className="px-2 py-0.5 rounded-full text-xs border bg-emerald-100 text-emerald-700 border-emerald-200">בזמן</span>;
+  const days = forecast.daysOverdue;
+  if (status === "late_minor") return <span className="px-2 py-0.5 rounded-full text-xs border bg-amber-100 text-amber-700 border-amber-200">מאחר {days} ימים</span>;
+  return <span className="px-2 py-0.5 rounded-full text-xs border bg-red-100 text-red-600 border-red-200">מאחר {days} ימים</span>;
 }
 
-function getCustomerStats(cardNumber, documents) {
-  const docs = documents
-    .filter(d => d.rivhit_card_number === cardNumber)
-    .sort((a, b) => (b.document_date || "").localeCompare(a.document_date || ""));
-  if (!docs.length) return { lastDate: null, daysSince: null, totalOrders: 0, avgOrder: null };
-  const lastDate = docs[0].document_date;
-  const daysSince = lastDate ? differenceInDays(new Date(), parseISO(lastDate)) : null;
+function getCustomerDocStats(cardNumber, documents) {
+  const docs = documents.filter(d => d.rivhit_card_number === cardNumber);
   const totalRevenue = docs.reduce((s, d) => s + (d.total_to_pay || 0), 0);
   const avgOrder = docs.length ? Math.round(totalRevenue / docs.length) : null;
-  return { lastDate, daysSince, totalOrders: docs.length, avgOrder };
+  return { totalOrders: docs.length, avgOrder };
 }
-
-const ALERT_OPTIONS = [
-  { value: "all", label: "כל ההתראות" },
-  { value: "30", label: "לא הזמין 30+ יום" },
-  { value: "60", label: "לא הזמין 60+ יום" },
-];
 
 const TYPE_OPTIONS = ["חנות חיות", "מספרת כלבים", "מפיץ", "אחר"];
 
+const ALERT_OPTIONS = [
+  { value: "all", label: "כל הסטטוסים" },
+  { value: "late_minor", label: "מאחר עד 14 יום" },
+  { value: "late_major", label: "מאחר 14+ יום" },
+  { value: "on_time", label: "בזמן" },
+  { value: "no_data", label: "אין נתונים" },
+];
+
 export default function Customers() {
   const navigate = useNavigate();
-  const [search, setSearch]         = useState("");
-  const [filterTypes, setFilterTypes] = useState([]); // multi-select
+  const [search, setSearch]           = useState("");
+  const [filterTypes, setFilterTypes] = useState([]);
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterAlert, setFilterAlert]   = useState("all");
 
@@ -66,6 +66,16 @@ export default function Customers() {
     queryKey: ["rivhit-documents-list"],
     queryFn: () => base44.entities.RivhitRawDocument.list("-document_date", 5000),
   });
+
+  // Build a map of card_number -> docs for perf
+  const docsByCard = useMemo(() => {
+    const map = {};
+    documents.forEach(d => {
+      if (!map[d.rivhit_card_number]) map[d.rivhit_card_number] = [];
+      map[d.rivhit_card_number].push(d);
+    });
+    return map;
+  }, [documents]);
 
   const toggleType = (type) => {
     setFilterTypes(prev =>
@@ -81,13 +91,12 @@ export default function Customers() {
       if (filterStatus === "active" && c.is_active === false) return false;
       if (filterStatus === "inactive" && c.is_active !== false) return false;
       if (filterAlert !== "all") {
-        const { daysSince } = getCustomerStats(c.rivhit_card_number, documents);
-        const threshold = parseInt(filterAlert);
-        if (daysSince === null || daysSince < threshold) return false;
+        const forecast = computePersonalForecast(docsByCard[c.rivhit_card_number] || []);
+        if (getForecastStatus(forecast) !== filterAlert) return false;
       }
       return true;
     });
-  }, [customers, documents, search, filterTypes, filterStatus, filterAlert]);
+  }, [customers, docsByCard, search, filterTypes, filterStatus, filterAlert]);
 
   return (
     <div className="space-y-4">
@@ -106,9 +115,7 @@ export default function Customers() {
             />
           </div>
           <Select value={filterStatus} onValueChange={setFilterStatus}>
-            <SelectTrigger className="w-36">
-              <SelectValue placeholder="סטטוס" />
-            </SelectTrigger>
+            <SelectTrigger className="w-36"><SelectValue placeholder="סטטוס" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">כל הסטטוסים</SelectItem>
               <SelectItem value="active">פעיל</SelectItem>
@@ -116,15 +123,12 @@ export default function Customers() {
             </SelectContent>
           </Select>
           <Select value={filterAlert} onValueChange={setFilterAlert}>
-            <SelectTrigger className="w-48">
-              <SelectValue placeholder="התראות" />
-            </SelectTrigger>
+            <SelectTrigger className="w-48"><SelectValue placeholder="סטטוס צפי" /></SelectTrigger>
             <SelectContent>
               {ALERT_OPTIONS.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
             </SelectContent>
           </Select>
         </div>
-        {/* Multi-select type filter */}
         <div className="flex flex-wrap gap-2 items-center">
           <span className="text-xs text-muted-foreground">סוג:</span>
           <button
@@ -156,7 +160,8 @@ export default function Customers() {
                 <th className="px-4 py-3 font-medium text-muted-foreground">עיר</th>
                 <th className="px-4 py-3 font-medium text-muted-foreground">טלפון</th>
                 <th className="px-4 py-3 font-medium text-muted-foreground">קנייה אחרונה</th>
-                <th className="px-4 py-3 font-medium text-muted-foreground">ימים מאז</th>
+                <th className="px-4 py-3 font-medium text-muted-foreground">צפי הבא</th>
+                <th className="px-4 py-3 font-medium text-muted-foreground">סטטוס צפי</th>
                 <th className="px-4 py-3 font-medium text-muted-foreground">הזמנות</th>
                 <th className="px-4 py-3 font-medium text-muted-foreground">ממוצע ₪</th>
                 <th className="px-4 py-3 font-medium text-muted-foreground">PL</th>
@@ -166,14 +171,19 @@ export default function Customers() {
             </thead>
             <tbody>
               {isLoading && (
-                <tr><td colSpan={11} className="py-12 text-center text-muted-foreground">טוען נתונים...</td></tr>
+                <tr><td colSpan={12} className="py-12 text-center text-muted-foreground">טוען נתונים...</td></tr>
               )}
               {!isLoading && filtered.length === 0 && (
-                <tr><td colSpan={11} className="py-12 text-center text-muted-foreground">לא נמצאו לקוחות</td></tr>
+                <tr><td colSpan={12} className="py-12 text-center text-muted-foreground">לא נמצאו לקוחות</td></tr>
               )}
               {filtered.map((c) => {
-                const { lastDate, daysSince, totalOrders, avgOrder } = getCustomerStats(c.rivhit_card_number, documents);
+                const customerDocs = docsByCard[c.rivhit_card_number] || [];
+                const forecast = computePersonalForecast(customerDocs);
+                const { totalOrders, avgOrder } = getCustomerDocStats(c.rivhit_card_number, documents);
                 const isActive = c.is_active !== false;
+                const nextStr = forecast.nextPurchase
+                  ? forecast.nextPurchase.toLocaleDateString("he-IL", { day: "2-digit", month: "2-digit", year: "2-digit" })
+                  : "—";
                 return (
                   <tr
                     key={c.id}
@@ -184,8 +194,9 @@ export default function Customers() {
                     <td className="px-4 py-3"><TypeBadge type={c.customer_type} /></td>
                     <td className="px-4 py-3 text-muted-foreground">{c.city || "—"}</td>
                     <td className="px-4 py-3">{c.phone || "—"}</td>
-                    <td className="px-4 py-3 text-muted-foreground">{lastDate || "—"}</td>
-                    <td className="px-4 py-3"><DaysCell days={daysSince} /></td>
+                    <td className="px-4 py-3 text-muted-foreground">{forecast.lastDate || "—"}</td>
+                    <td className="px-4 py-3 text-muted-foreground text-xs">{forecast.hasEnoughData ? nextStr : "—"}</td>
+                    <td className="px-4 py-3"><ForecastStatusBadge forecast={forecast} /></td>
                     <td className="px-4 py-3">{totalOrders || "—"}</td>
                     <td className="px-4 py-3">{avgOrder ? `₪${avgOrder.toLocaleString()}` : "—"}</td>
                     <td className="px-4 py-3">
