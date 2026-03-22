@@ -161,7 +161,7 @@ export default function Dashboard() {
       return { label, total };
     });
 
-    return { activeCustomers: activeCustomers.length, inactive30, inactive60, dueSoon, overdue, monthDocs, monthRevenue, monthAvg, recentDocs, chartData };
+    return { activeCustomers: activeCustomers.length, lateMinor, dueSoon, overdue, monthDocs, monthRevenue, monthAvg, recentDocs, chartData };
   }, [customers, documents]);
 
   // Build customer lookup
