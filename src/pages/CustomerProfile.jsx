@@ -243,19 +243,44 @@ export default function CustomerProfile() {
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
                     <StatCard label="קנייה אחרונה" value={stats.lastDoc?.document_date || "—"} />
                     <StatCard label="סה״כ הזמנות" value={stats.totalOrders} />
-                    <StatCard label="ימים מאז קנייה" value={stats.daysSinceLast !== null ? `${stats.daysSinceLast} יום` : "—"} />
+                    <StatCard
+                      label="ימים מאז קנייה"
+                      value={forecast.daysSinceLast !== null ? `${forecast.daysSinceLast} יום` : "—"}
+                    />
                     {isOwner && <>
                       <StatCard label="סה״כ מחזור" value={`₪${stats.totalRevenue.toLocaleString()}`} highlight />
                       <StatCard label="ממוצע הזמנה" value={`₪${stats.avgOrder.toLocaleString()}`} highlight />
                     </>}
-                    <StatCard label="ממוצע ימים בין הזמנות" value={stats.avgDaysBetween !== null ? `${stats.avgDaysBetween} יום` : "אין מספיק נתונים"} />
+                    <StatCard
+                      label="ממוצע ימים בין הזמנות"
+                      value={forecast.hasEnoughData ? `${forecast.avgDaysBetween} יום` : "אין מספיק נתונים"}
+                    />
                     <StatCard
                       label="צפי הזמנה הבאה"
-                      value={stats.nextPurchase ? format(stats.nextPurchase, "dd/MM/yyyy") : "אין מספיק נתונים"}
+                      value={forecast.hasEnoughData ? format(forecast.nextPurchase, "dd/MM/yyyy") : "אין מספיק נתונים"}
                     />
                   </div>
-                  {docs.length < 3 && (
-                    <p className="text-xs text-muted-foreground">* צפי רכישה דורש לפחות 3 הזמנות</p>
+
+                  {/* Forecast status block */}
+                  {forecast.hasEnoughData ? (
+                    <div className={`rounded-lg p-3 text-sm flex items-center gap-3 ${
+                      forecast.daysOverdue === null
+                        ? "bg-emerald-50 border border-emerald-200 text-emerald-800"
+                        : forecast.daysOverdue <= 14
+                          ? "bg-amber-50 border border-amber-200 text-amber-800"
+                          : "bg-red-50 border border-red-200 text-red-800"
+                    }`}>
+                      <span className="font-medium">
+                        {forecast.daysOverdue === null
+                          ? `✓ בזמן — עוד ${forecast.daysRemaining} ימים להזמנה הבאה`
+                          : `⚠ מאחר ${forecast.daysOverdue} ימים מהצפי האישי`
+                        }
+                      </span>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-muted-foreground bg-muted/40 rounded-lg p-3">
+                      נדרשות לפחות 3 הזמנות לחישוב צפי — כרגע {docs.length} הזמנות בלבד
+                    </p>
                   )}
                 </>
               )}
