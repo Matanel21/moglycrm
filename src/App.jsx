@@ -18,6 +18,7 @@ import Suppliers from '@/pages/Suppliers';
 import CustomerProfile from '@/pages/CustomerProfile';
 import ShortageReport from '@/pages/ShortageReport';
 import SupplierOrders from '@/pages/SupplierOrders';
+import Inventory from '@/pages/Inventory';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
