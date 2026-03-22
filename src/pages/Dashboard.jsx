@@ -258,7 +258,7 @@ export default function Dashboard() {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6">
               {stats.dueSoon.map(c => (
-                <CustomerRow key={c.id} customer={c} sub={`צפי: ${format(c.nextPurchase, "dd/MM/yy")}`} />
+                <CustomerRow key={c.id} customer={c} sub={`צפי: ${format(c.forecast.nextPurchase, "dd/MM/yy")} | עוד ${c.forecast.daysRemaining} ימים`} />
               ))}
             </div>
           </CardContent>
