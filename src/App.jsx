@@ -14,6 +14,7 @@ import Contacts from '@/pages/Contacts';
 import RivhitSettings from '@/pages/RivhitSettings';
 import RivhitTest from '@/pages/RivhitTest';
 import SyncDashboard from '@/pages/SyncDashboard';
+import CustomerProfile from '@/pages/CustomerProfile';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
