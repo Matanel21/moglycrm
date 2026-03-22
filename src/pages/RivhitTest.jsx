@@ -69,33 +69,11 @@ export default function RivhitTest() {
     setLoadingMap((prev) => ({ ...prev, [key]: false }));
   };
 
-  const BASE = "https://api.rivhit.co.il/online/RivhitOnlineAPI.svc";
-
   const tests = [
-    {
-      key: "connection",
-      label: "בדיקת חיבור",
-      endpoint: `${BASE}/Customer.List`,
-      tab: null,
-    },
-    {
-      key: "customers",
-      label: "משוך לקוחות לדוגמה",
-      endpoint: `${BASE}/Customer.List`,
-      tab: "customers",
-    },
-    {
-      key: "products",
-      label: "משוך מוצרים לדוגמה",
-      endpoint: `${BASE}/Item.List`,
-      tab: "products",
-    },
-    {
-      key: "documents",
-      label: "משוך מסמכים לדוגמה",
-      endpoint: `${BASE}/Document.List`,
-      tab: "documents",
-    },
+    { key: "connection", label: "בדיקת חיבור", endpoint: "Customer.List" },
+    { key: "customers",  label: "משוך לקוחות לדוגמה", endpoint: "Customer.List" },
+    { key: "products",   label: "משוך מוצרים לדוגמה", endpoint: "Item.List" },
+    { key: "documents",  label: "משוך מסמכים לדוגמה", endpoint: "Document.List" },
   ];
 
   return (
