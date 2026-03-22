@@ -33,6 +33,11 @@ Deno.serve(async (req) => {
       url = `${url}?${qs}`;
     }
 
+    console.log('URL:', url);
+    console.log('BODY:', JSON.stringify({ token_api: settings.api_token, ...params }));
+    console.log('TOKEN EXISTS:', !!settings.api_token);
+    console.log('BASE URL:', settings.base_url);
+
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 15000);
 
