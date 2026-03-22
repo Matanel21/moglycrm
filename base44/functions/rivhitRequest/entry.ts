@@ -24,14 +24,9 @@ Deno.serve(async (req) => {
       return Response.json({ success: false, error: 'טוקן API לא מוגדר. הגדר אותו בהגדרות ריווחית.' }, { status: 400 });
     }
 
-    const baseUrl = (settings.base_url || '').replace(/\/$/, '');
+    const BASE = 'https://api.rivhit.co.il/online/RivhitOnlineAPI.svc';
     const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
-    let url = `${baseUrl}${cleanEndpoint}`;
-
-    if (method === 'GET' && Object.keys(params).length > 0) {
-      const qs = new URLSearchParams(params).toString();
-      url = `${url}?${qs}`;
-    }
+    const url = `${BASE}${cleanEndpoint}`;
 
     console.log('URL:', url);
     console.log('BODY:', JSON.stringify({ token_api: settings.api_token, ...params }));
