@@ -188,10 +188,10 @@ export default function Dashboard() {
 
       {/* Main KPI cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard icon={Users}         label="לקוחות פעילים"          value={stats.activeCustomers}   color="bg-blue-500" />
-        <StatCard icon={Clock}         label="לא הזמינו 30+ יום"       value={stats.inactive30.length} color="bg-amber-500" />
-        <StatCard icon={AlertTriangle} label="לא הזמינו 60+ יום"       value={stats.inactive60.length} color="bg-red-500" />
-        <StatCard icon={CalendarCheck} label="צפי הזמנות השבוע הקרוב"  value={stats.dueSoon.length}    color="bg-emerald-500" />
+        <StatCard icon={Users}         label="לקוחות פעילים"              value={stats.activeCustomers}   color="bg-blue-500" />
+        <StatCard icon={Clock}         label="מאחרים עד 14 יום"           value={stats.lateMinor.length}  color="bg-amber-500" />
+        <StatCard icon={AlertTriangle} label="מאחרים 14+ יום"             value={stats.overdue.length}    color="bg-red-500" />
+        <StatCard icon={CalendarCheck} label="צפי הזמנות השבוע הקרוב"     value={stats.dueSoon.length}    color="bg-emerald-500" />
       </div>
 
       {/* Financial (owner only) — with eye toggle */}
