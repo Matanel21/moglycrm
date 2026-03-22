@@ -70,7 +70,7 @@ export default function RivhitTest() {
   };
 
   const tests = [
-    { key: "connection", label: "בדיקת חיבור", endpoint: "Customer.List" },
+    { key: "connection", label: "בדיקת חיבור", endpoint: "Company.Details" },
     { key: "customers",  label: "משוך לקוחות לדוגמה", endpoint: "Customer.List" },
     { key: "products",   label: "משוך מוצרים לדוגמה", endpoint: "Item.List" },
     { key: "documents",  label: "משוך מסמכים לדוגמה", endpoint: "Document.List" },
