@@ -19,6 +19,7 @@ const navItems = [
 const managementItems = [
   { path: "/shortage-report", label: "חוסרים לייצור", icon: AlertCircle },
   { path: "/supplier-orders", label: "הזמנות לספקים", icon: ShoppingBag },
+  { path: "/inventory", label: "ניהול מלאי", icon: Boxes },
 ];
 
 const rivhitItems = [
