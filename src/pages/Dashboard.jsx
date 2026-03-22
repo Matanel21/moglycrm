@@ -6,7 +6,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Users, AlertTriangle, Clock, CalendarCheck, TrendingUp, FileText, BarChart2, Eye, EyeOff } from "lucide-react";
 import { Link } from "react-router-dom";
 import PageHeader from "@/components/shared/PageHeader";
-import { differenceInDays, parseISO, addDays, format, startOfMonth, endOfMonth, subMonths, startOfMonth as som } from "date-fns";
+import { differenceInDays, parseISO, addDays, format, startOfMonth, endOfMonth, subMonths } from "date-fns";
+import { computePersonalForecast } from "@/lib/customerForecast";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import PasswordModal from "@/components/dashboard/PasswordModal";
 
