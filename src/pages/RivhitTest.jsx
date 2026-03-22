@@ -55,7 +55,7 @@ export default function RivhitTest() {
     setResultMap((prev) => ({ ...prev, [key]: null }));
     setRawMap((prev) => ({ ...prev, [key]: null }));
 
-    const res = await base44.functions.invoke("rivhitRequest", { endpoint, method: "GET" });
+    const res = await base44.functions.invoke("rivhitRequest", { endpoint, method: "POST" });
     const result = res.data;
 
     setResultMap((prev) => ({ ...prev, [key]: result }));
@@ -73,25 +73,25 @@ export default function RivhitTest() {
     {
       key: "connection",
       label: "בדיקת חיבור",
-      endpoint: settings.endpoint_connection,
+      endpoint: "/Customer.List",
       tab: null,
     },
     {
       key: "customers",
       label: "משוך לקוחות לדוגמה",
-      endpoint: settings.endpoint_customers,
+      endpoint: "/Customer.List",
       tab: "customers",
     },
     {
       key: "products",
       label: "משוך מוצרים לדוגמה",
-      endpoint: settings.endpoint_products,
+      endpoint: "/Item.List",
       tab: "products",
     },
     {
       key: "documents",
       label: "משוך מסמכים לדוגמה",
-      endpoint: settings.endpoint_documents,
+      endpoint: "/Document.List",
       tab: "documents",
     },
   ];
