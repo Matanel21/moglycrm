@@ -219,13 +219,13 @@ export default function Dashboard() {
           <CardContent className="p-5">
             <div className="flex items-center gap-2 mb-4">
               <AlertTriangle className="w-4 h-4 text-red-500" />
-              <h2 className="font-semibold">דורשים תשומת לב — עבר צפי ההזמנה</h2>
+              <h2 className="font-semibold">מאחרים 14+ יום מהצפי האישי</h2>
             </div>
             {stats.overdue.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-6">אין לקוחות בהתראה</p>
             ) : (
               stats.overdue.slice(0, 8).map(c => (
-                <CustomerRow key={c.id} customer={c} sub={`צפי: ${format(c.nextPurchase, "dd/MM/yy")} | ${c.daysSince} ימים מאז קנייה`} />
+                <CustomerRow key={c.id} customer={c} sub={`צפי: ${format(c.forecast.nextPurchase, "dd/MM/yy")} | מאחר ${c.forecast.daysOverdue} ימים`} />
               ))
             )}
           </CardContent>
@@ -235,13 +235,13 @@ export default function Dashboard() {
           <CardContent className="p-5">
             <div className="flex items-center gap-2 mb-4">
               <Clock className="w-4 h-4 text-amber-500" />
-              <h2 className="font-semibold">לא הזמינו זמן חריג — 60+ יום</h2>
+              <h2 className="font-semibold">מאחרים עד 14 יום מהצפי האישי</h2>
             </div>
-            {stats.inactive60.length === 0 ? (
+            {stats.lateMinor.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-6">אין לקוחות בקטגוריה זו</p>
             ) : (
-              stats.inactive60.slice(0, 8).map(c => (
-                <CustomerRow key={c.id} customer={c} sub={`${c.daysSince} ימים מאז קנייה אחרונה`} />
+              stats.lateMinor.slice(0, 8).map(c => (
+                <CustomerRow key={c.id} customer={c} sub={`צפי: ${format(c.forecast.nextPurchase, "dd/MM/yy")} | מאחר ${c.forecast.daysOverdue} ימים`} />
               ))
             )}
           </CardContent>
