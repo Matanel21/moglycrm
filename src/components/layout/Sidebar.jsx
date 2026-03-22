@@ -97,6 +97,30 @@ export default function Sidebar() {
           })}
 
           {!collapsed && (
+            <p className="text-xs text-sidebar-foreground/30 px-3 pt-4 pb-1 uppercase tracking-wider">ניהול</p>
+          )}
+          {collapsed && <div className="border-t border-sidebar-border my-2" />}
+          {managementItems.map((item) => {
+            const isActive = location.pathname === item.path;
+            return (
+              <Link
+                key={item.path}
+                to={item.path}
+                onClick={() => setMobileOpen(false)}
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors",
+                  isActive
+                    ? "bg-sidebar-primary text-sidebar-primary-foreground"
+                    : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
+                )}
+              >
+                <item.icon className="w-5 h-5 shrink-0" />
+                {!collapsed && <span>{item.label}</span>}
+              </Link>
+            );
+          })}
+
+          {!collapsed && (
             <p className="text-xs text-sidebar-foreground/30 px-3 pt-4 pb-1 uppercase tracking-wider">ריווחית</p>
           )}
           {collapsed && <div className="border-t border-sidebar-border my-2" />}
