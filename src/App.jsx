@@ -51,6 +51,7 @@ const AuthenticatedApp = () => {
         <Route path="/rivhit-settings" element={<RivhitSettings />} />
         <Route path="/rivhit-test" element={<RivhitTest />} />
         <Route path="/sync" element={<SyncDashboard />} />
+        <Route path="/customers/:id" element={<CustomerProfile />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
