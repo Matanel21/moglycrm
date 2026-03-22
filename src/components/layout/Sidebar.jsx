@@ -16,6 +16,11 @@ const navItems = [
   { path: "/suppliers", label: "ספקים", icon: Truck },
 ];
 
+const managementItems = [
+  { path: "/shortage-report", label: "חוסרים לייצור", icon: AlertCircle },
+  { path: "/supplier-orders", label: "הזמנות לספקים", icon: ShoppingBag },
+];
+
 const rivhitItems = [
   { path: "/sync", label: "סנכרון נתונים", icon: BarChart2 },
   { path: "/rivhit-test", label: "בדיקת ריווחית", icon: FlaskConical },

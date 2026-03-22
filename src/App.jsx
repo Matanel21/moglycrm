@@ -56,6 +56,8 @@ const AuthenticatedApp = () => {
         <Route path="/sync" element={<SyncDashboard />} />
         <Route path="/suppliers" element={<Suppliers />} />
         <Route path="/customers/:id" element={<CustomerProfile />} />
+        <Route path="/shortage-report" element={<ShortageReport />} />
+        <Route path="/supplier-orders" element={<SupplierOrders />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
