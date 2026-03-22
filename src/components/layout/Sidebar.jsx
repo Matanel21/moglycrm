@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { 
   LayoutDashboard, Users, Package, ShoppingCart, 
-  Contact, Menu, X, ChevronLeft 
+  Contact, Menu, X, ChevronLeft, FlaskConical, Settings
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -12,6 +12,11 @@ const navItems = [
   { path: "/products", label: "מוצרים", icon: Package },
   { path: "/orders", label: "הזמנות", icon: ShoppingCart },
   { path: "/contacts", label: "אנשי קשר", icon: Contact },
+];
+
+const rivhitItems = [
+  { path: "/rivhit-test", label: "בדיקת ריווחית", icon: FlaskConical },
+  { path: "/rivhit-settings", label: "הגדרות ריווחית", icon: Settings },
 ];
 
 export default function Sidebar() {
@@ -62,8 +67,33 @@ export default function Sidebar() {
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 py-3 px-2 space-y-1">
+        <nav className="flex-1 py-3 px-2 space-y-1 overflow-y-auto">
           {navItems.map((item) => {
+            const isActive = location.pathname === item.path;
+            return (
+              <Link
+                key={item.path}
+                to={item.path}
+                onClick={() => setMobileOpen(false)}
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors",
+                  isActive
+                    ? "bg-sidebar-primary text-sidebar-primary-foreground"
+                    : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
+                )}
+              >
+                <item.icon className="w-5 h-5 shrink-0" />
+                {!collapsed && <span>{item.label}</span>}
+              </Link>
+            );
+          })}
+
+          {!collapsed && (
+            <p className="text-xs text-sidebar-foreground/30 px-3 pt-4 pb-1 uppercase tracking-wider">ריווחית</p>
+          )}
+          {collapsed && <div className="border-t border-sidebar-border my-2" />}
+
+          {rivhitItems.map((item) => {
             const isActive = location.pathname === item.path;
             return (
               <Link

@@ -11,6 +11,8 @@ import Customers from '@/pages/Customers';
 import Products from '@/pages/Products';
 import Orders from '@/pages/Orders';
 import Contacts from '@/pages/Contacts';
+import RivhitSettings from '@/pages/RivhitSettings';
+import RivhitTest from '@/pages/RivhitTest';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -44,6 +46,8 @@ const AuthenticatedApp = () => {
         <Route path="/products" element={<Products />} />
         <Route path="/orders" element={<Orders />} />
         <Route path="/contacts" element={<Contacts />} />
+        <Route path="/rivhit-settings" element={<RivhitSettings />} />
+        <Route path="/rivhit-test" element={<RivhitTest />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
