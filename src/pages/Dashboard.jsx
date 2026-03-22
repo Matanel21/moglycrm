@@ -14,28 +14,7 @@ import PasswordModal from "@/components/dashboard/PasswordModal";
 const HIDE = "****";
 const REVEAL_DURATION = 30_000;
 
-// ── helpers ────────────────────────────────────────────────
-function computeCustomerStats(customer, docs) {
-  const myDocs = docs
-    .filter(d => d.rivhit_card_number === customer.rivhit_card_number)
-    .sort((a, b) => (b.document_date || "").localeCompare(a.document_date || ""));
-  if (!myDocs.length) return { lastDate: null, daysSince: null, nextPurchase: null };
-  const lastDate = myDocs[0].document_date;
-  const daysSince = lastDate ? differenceInDays(new Date(), parseISO(lastDate)) : null;
-  let nextPurchase = null;
-  if (myDocs.length >= 3) {
-    const gaps = [];
-    for (let i = 0; i < myDocs.length - 1; i++) {
-      if (myDocs[i].document_date && myDocs[i + 1].document_date)
-        gaps.push(differenceInDays(parseISO(myDocs[i].document_date), parseISO(myDocs[i + 1].document_date)));
-    }
-    if (gaps.length) {
-      const avg = Math.round(gaps.reduce((s, g) => s + g, 0) / gaps.length);
-      nextPurchase = addDays(parseISO(lastDate), avg);
-    }
-  }
-  return { lastDate, daysSince, nextPurchase };
-}
+// (forecast computation moved to lib/customerForecast.js)
 
 // ── useReveal hook ─────────────────────────────────────────
 function useReveal() {
