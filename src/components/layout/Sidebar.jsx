@@ -3,7 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { 
   LayoutDashboard, Users, Package, ShoppingCart, 
   Contact, Menu, X, ChevronLeft, FlaskConical, Settings, BarChart2, Truck,
-  AlertCircle, ShoppingBag
+  AlertCircle, ShoppingBag, Boxes
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
