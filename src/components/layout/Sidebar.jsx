@@ -15,6 +15,7 @@ const navItems = [
 ];
 
 const rivhitItems = [
+  { path: "/sync", label: "סנכרון נתונים", icon: BarChart2 },
   { path: "/rivhit-test", label: "בדיקת ריווחית", icon: FlaskConical },
   { path: "/rivhit-settings", label: "הגדרות ריווחית", icon: Settings },
 ];

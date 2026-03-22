@@ -13,6 +13,7 @@ import Orders from '@/pages/Orders';
 import Contacts from '@/pages/Contacts';
 import RivhitSettings from '@/pages/RivhitSettings';
 import RivhitTest from '@/pages/RivhitTest';
+import SyncDashboard from '@/pages/SyncDashboard';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -48,6 +49,7 @@ const AuthenticatedApp = () => {
         <Route path="/contacts" element={<Contacts />} />
         <Route path="/rivhit-settings" element={<RivhitSettings />} />
         <Route path="/rivhit-test" element={<RivhitTest />} />
+        <Route path="/sync" element={<SyncDashboard />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
