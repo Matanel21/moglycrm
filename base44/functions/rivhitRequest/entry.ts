@@ -45,7 +45,7 @@ Deno.serve(async (req) => {
           'Accept': 'application/json',
         },
         body: JSON.stringify({
-          api_token: settings.api_token,
+          token_api: settings.api_token,
           ...params
         }),
         signal: controller.signal,
