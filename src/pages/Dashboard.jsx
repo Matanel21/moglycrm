@@ -122,13 +122,23 @@ export default function Dashboard() {
 
   const stats = useMemo(() => {
     const activeCustomers = customers.filter(c => c.is_active !== false);
-    const enriched = activeCustomers.map(c => ({ ...c, ...computeCustomerStats(c, documents) }));
-    const inactive30 = enriched.filter(c => c.daysSince !== null && c.daysSince >= 30);
-    const inactive60 = enriched.filter(c => c.daysSince !== null && c.daysSince >= 60);
+    const docsByCard = {};
+    documents.forEach(d => {
+      if (!docsByCard[d.rivhit_card_number]) docsByCard[d.rivhit_card_number] = [];
+      docsByCard[d.rivhit_card_number].push(d);
+    });
+    const enriched = activeCustomers.map(c => {
+      const forecast = computePersonalForecast(docsByCard[c.rivhit_card_number] || []);
+      return { ...c, forecast };
+    });
     const now = new Date();
     const in7 = addDays(now, 7);
-    const dueSoon = enriched.filter(c => c.nextPurchase && c.nextPurchase >= now && c.nextPurchase <= in7);
-    const overdue = enriched.filter(c => c.nextPurchase && c.nextPurchase < now && c.daysSince !== null && c.daysSince >= (differenceInDays(now, c.nextPurchase) + 1));
+    // overdue 14+ days past personal forecast
+    const overdue = enriched.filter(c => c.forecast.hasEnoughData && c.forecast.daysOverdue !== null && c.forecast.daysOverdue >= 14);
+    // late minor: 0-14 days past forecast
+    const lateMinor = enriched.filter(c => c.forecast.hasEnoughData && c.forecast.daysOverdue !== null && c.forecast.daysOverdue < 14);
+    // due soon: next forecast within 7 days
+    const dueSoon = enriched.filter(c => c.forecast.hasEnoughData && c.forecast.nextPurchase && c.forecast.nextPurchase >= now && c.forecast.nextPurchase <= in7);
     const monthStart = startOfMonth(now).toISOString().slice(0, 10);
     const monthEnd   = endOfMonth(now).toISOString().slice(0, 10);
     const monthDocs  = documents.filter(d => d.document_date >= monthStart && d.document_date <= monthEnd);
