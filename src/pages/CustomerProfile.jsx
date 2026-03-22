@@ -113,6 +113,7 @@ export default function CustomerProfile() {
     updateMutation.mutate({ crm_notes: notes, customer_type: customerType, price_list: priceList, private_label: privateLabel, is_active: isActive });
 
   const stats = computeStats(docs);
+  const forecast = computePersonalForecast(docs);
   const topProducts = getTopProducts(docs);
 
   if (isLoading) return <div className="py-24 text-center text-muted-foreground">טוען...</div>;
