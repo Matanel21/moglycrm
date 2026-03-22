@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { 
   LayoutDashboard, Users, Package, ShoppingCart, 
-  Contact, Menu, X, ChevronLeft, FlaskConical, Settings, BarChart2
+  Contact, Menu, X, ChevronLeft, FlaskConical, Settings, BarChart2, Truck
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -12,6 +12,7 @@ const navItems = [
   { path: "/products", label: "מוצרים", icon: Package },
   { path: "/orders", label: "הזמנות", icon: ShoppingCart },
   { path: "/contacts", label: "אנשי קשר", icon: Contact },
+  { path: "/suppliers", label: "ספקים", icon: Truck },
 ];
 
 const rivhitItems = [
