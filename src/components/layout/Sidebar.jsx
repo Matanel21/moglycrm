@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { 
-  LayoutDashboard, Users, Package, ShoppingCart, 
+import {
+  LayoutDashboard, Users, Package, ShoppingCart,
   Contact, Menu, X, ChevronLeft, FlaskConical, Settings, BarChart2, Truck,
-  AlertCircle, ShoppingBag, Boxes
+  AlertCircle, ShoppingBag, Boxes, Sun, Moon
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTheme } from "next-themes";
 
 const navItems = [
   { path: "/", label: "לוח בקרה", icon: LayoutDashboard },
@@ -32,6 +33,7 @@ export default function Sidebar() {
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { theme, setTheme } = useTheme();
 
   return (
     <>
@@ -146,6 +148,17 @@ export default function Sidebar() {
             );
           })}
         </nav>
+
+        {/* Dark mode toggle */}
+        <div className="p-2 border-t border-sidebar-border">
+          <button
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors"
+          >
+            {theme === 'dark' ? <Sun className="w-5 h-5 shrink-0" /> : <Moon className="w-5 h-5 shrink-0" />}
+            {!collapsed && <span>{theme === 'dark' ? 'מצב בהיר' : 'מצב כהה'}</span>}
+          </button>
+        </div>
       </aside>
     </>
   );
