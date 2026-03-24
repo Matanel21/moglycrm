@@ -19,7 +19,7 @@ async function rivhitPost(endpoint, body) {
 }
 
 async function syncCustomers(base44, token) {
-  const data = await rivhitPost('Customer.List', { token_api: token });
+  const data = await rivhitPost('Customer.List', { api_token: token });
   const list = data?.customer_list || data?.CustomerList || data?.data || (Array.isArray(data) ? data : []);
   console.log('customers fetched:', list.length);
 
@@ -60,7 +60,7 @@ async function syncCustomers(base44, token) {
 }
 
 async function syncProducts(base44, token) {
-  const data = await rivhitPost('Item.List', { token_api: token });
+  const data = await rivhitPost('Item.List', { api_token: token });
   const list = data?.item_list || data?.ItemList || data?.data || (Array.isArray(data) ? data : []);
   console.log('products fetched:', list.length);
 
@@ -99,7 +99,7 @@ async function syncProducts(base44, token) {
 }
 
 async function syncDocuments(base44, token) {
-  const data = await rivhitPost('Document.List', { token_api: token, document_type: 1 });
+  const data = await rivhitPost('Document.List', { api_token: token, document_type: 1 });
   const list = data?.document_list || data?.DocumentList || data?.data || (Array.isArray(data) ? data : []);
   console.log('documents fetched:', list.length);
 
