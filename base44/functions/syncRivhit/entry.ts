@@ -1,314 +1,217 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
 
-const BASE = 'https://api.rivhit.co.il/online/RivhitOnlineAPI.svc';
+const API = 'https://api.rivhit.co.il/online/RivhitOnlineAPI.svc';
 
-async function rivhitPost(endpoint, body) {
-  const url = `${BASE}/${endpoint}`;
-  console.log('POST', url);
+const SYNC_CONFIG = {
+  customers: {
+    endpoint: 'Customer.List',
+    body: (token) => ({ api_token: token }),
+    listKey: 'customer_list',
+    entity: 'RivhitRawCustomer',
+    keyField: 'rivhit_card_number',
+    sourceKey: 'customer_id',
+  },
+  products: {
+    endpoint: 'Item.List',
+    body: (token) => ({ api_token: token }),
+    listKey: 'item_list',
+    entity: 'RivhitRawProduct',
+    keyField: 'rivhit_item_code',
+    sourceKey: 'item_code',
+  },
+  documents: {
+    endpoint: 'Document.List',
+    body: (token) => ({ api_token: token, document_type: 1 }),
+    listKey: 'document_list',
+    entity: 'RivhitRawDocument',
+    keyField: 'rivhit_document_id',
+    sourceKey: 'document_id',
+  },
+};
+
+async function fetchFromRivhit(endpoint, body) {
+  const url = `${API}/${endpoint}`;
+  console.log(`[rivhit] POST ${url}`);
+
   const res = await fetch(url, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   });
+
   const text = await res.text();
-  console.log(`rivhitPost ${endpoint} status=${res.status} body=${text.substring(0, 500)}`);
+  console.log(`[rivhit] status=${res.status} length=${text.length}`);
+
+  let json;
   try {
-    return JSON.parse(text);
-  } catch (_) {
-    throw new Error(`תגובה לא תקינה מריווחית: ${text.substring(0, 200)}`);
+    json = JSON.parse(text);
+  } catch {
+    throw new Error(`Invalid JSON from Rivhit: ${text.substring(0, 200)}`);
   }
+
+  if (json.error_code && json.error_code !== 0) {
+    throw new Error(`Rivhit error ${json.error_code}: ${json.error_message || 'unknown'}`);
+  }
+
+  return json;
 }
 
-function extractList(response, key) {
-  // Rivhit API returns: { data: { [key]: [...] }, error_code: 0 }
-  // Handle both response.data.[key] and response.[key] structures
-  console.log('extractList key:', key, 'response keys:', Object.keys(response || {}));
-  console.log('response.data type:', typeof response?.data, 'response.data keys:', Object.keys(response?.data || {}));
+async function syncType(base44, token, type) {
+  const config = SYNC_CONFIG[type];
+  if (!config) throw new Error(`Unknown sync type: ${type}`);
 
-  if (response?.error_code !== undefined && response.error_code !== 0) {
-    console.error(`Rivhit API error: error_code=${response.error_code}, error_message=${response.error_message || 'unknown'}`);
-    return [];
+  console.log(`[sync] === ${type} START ===`);
+
+  // 1. Fetch from Rivhit
+  const response = await fetchFromRivhit(config.endpoint, config.body(token));
+
+  // 2. Extract list - try multiple paths
+  let list = response[config.listKey]
+    || response?.data?.[config.listKey]
+    || [];
+
+  if (!Array.isArray(list)) {
+    console.log(`[sync] ${config.listKey} is not an array, type=${typeof list}, keys=${Object.keys(list || {})}`);
+    list = [];
   }
 
-  // Try response.data.[key] first (standard Rivhit structure)
-  const nested = response?.data?.[key];
-  if (Array.isArray(nested)) {
-    console.log(`found array at response.data.${key}, length=${nested.length}`);
-    return nested;
-  }
+  console.log(`[sync] ${type}: fetched ${list.length} records`);
 
-  // Fallback: response.[key] directly
-  const direct = response?.[key];
-  if (Array.isArray(direct)) {
-    console.log(`found array at response.${key}, length=${direct.length}`);
-    return direct;
-  }
-
-  // Fallback: response.data is the array itself
-  if (Array.isArray(response?.data)) {
-    console.log(`found array at response.data, length=${response.data.length}`);
-    return response.data;
-  }
-
-  // Fallback: response is the array itself
-  if (Array.isArray(response)) {
-    console.log(`response is array, length=${response.length}`);
-    return response;
-  }
-
-  console.warn(`extractList: could not find array for key="${key}", returning empty`);
-  return [];
-}
-
-async function syncCustomers(base44, token) {
-  console.log('=== syncCustomers START ===');
-  const response = await rivhitPost('Customer.List', { api_token: token });
-  const list = extractList(response, 'customer_list');
-  console.log('customers to process:', list.length);
-
-  if (list.length === 0) {
-    console.log('no customers to sync');
-    return { fetched: 0, saved: 0 };
-  }
-
+  // 3. Upsert each record
+  const entity = base44.asServiceRole.entities[config.entity];
   let saved = 0;
-  for (const c of list) {
+  let errors = 0;
+
+  for (const item of list) {
     try {
-      console.log('processing customer:', c.customer_id);
+      const keyValue = item[config.sourceKey];
+      if (keyValue === undefined || keyValue === null) {
+        console.log(`[sync] skipping record with no ${config.sourceKey}`);
+        continue;
+      }
+
+      // Check if exists
       let existing = [];
       try {
-        existing = await base44.asServiceRole.entities.RivhitRawCustomer.list({ filter: { rivhit_card_number: c.customer_id } });
-      } catch (filterErr) {
-        console.error('filter error:', filterErr.message);
+        existing = await entity.list({ filter: { [config.keyField]: keyValue } });
+        if (!Array.isArray(existing)) existing = [];
+      } catch {
         existing = [];
       }
+
       const record = {
-        rivhit_card_number: c.customer_id,
-        business_name: c.name_last ?? c.name ?? null,
-        contact_name: c.name_first ?? null,
-        street: c.street ?? null,
-        city: c.city ?? null,
-        zipcode: c.zipcode ?? null,
-        phone: c.phone ?? null,
-        phone2: c.phone2 ?? null,
-        fax: c.fax ?? null,
-        email: c.email ?? null,
-        vat_number: c.vat_number ?? null,
-        agent: c.agent_id != null ? String(c.agent_id) : null,
-        raw_json: typeof c === 'string' ? c : JSON.stringify(c),
+        [config.keyField]: keyValue,
+        raw_json: JSON.stringify(item),
         synced_at: new Date().toISOString(),
         sync_status: 'success',
       };
-      if (existing && existing.length > 0) {
-        console.log('updating existing customer:', existing[0].id);
-        const { is_active, ...updateData } = record;
-        await base44.asServiceRole.entities.RivhitRawCustomer.update(existing[0].id, updateData);
+
+      if (existing.length > 0) {
+        await entity.update(existing[0].id, record);
       } else {
-        console.log('creating new customer:', c.customer_id);
-        await base44.asServiceRole.entities.RivhitRawCustomer.create(record);
+        await entity.create(record);
       }
       saved++;
     } catch (err) {
-      console.error('שגיאה בלקוח', c.customer_id, err.message, err.stack);
+      errors++;
+      console.error(`[sync] error on ${type} record:`, err.message);
     }
   }
-  console.log(`=== syncCustomers END: fetched=${list.length} saved=${saved} ===`);
-  return { fetched: list.length, saved };
-}
 
-async function syncProducts(base44, token) {
-  console.log('=== syncProducts START ===');
-  const response = await rivhitPost('Item.List', { api_token: token });
-  const list = extractList(response, 'item_list');
-  console.log('products to process:', list.length);
-
-  if (list.length === 0) {
-    console.log('no products to sync');
-    return { fetched: 0, saved: 0 };
-  }
-
-  let saved = 0;
-  for (const p of list) {
-    try {
-      console.log('processing product:', p.item_code);
-      const shouldExclude =
-        p.item_code === 0 ||
-        /משלוח|הנחה|מלל/.test(p.description || '');
-
-      let existing = [];
-      try {
-        existing = await base44.asServiceRole.entities.RivhitRawProduct.list({ filter: { rivhit_item_code: p.item_code } });
-      } catch (filterErr) {
-        console.error('filter error:', filterErr.message);
-        existing = [];
-      }
-      const record = {
-        rivhit_item_code: p.item_code,
-        description: p.description ?? null,
-        barcode: p.barcode ?? null,
-        price: p.price ?? null,
-        currency: p.currency ?? null,
-        category: p.group_name ?? null,
-        raw_json: typeof p === 'string' ? p : JSON.stringify(p),
-        synced_at: new Date().toISOString(),
-        sync_status: 'success',
-      };
-      if (existing && existing.length > 0) {
-        console.log('updating existing product:', existing[0].id);
-        const { exclude_from_analysis, ...updateData } = record;
-        await base44.asServiceRole.entities.RivhitRawProduct.update(existing[0].id, updateData);
-      } else {
-        console.log('creating new product:', p.item_code);
-        await base44.asServiceRole.entities.RivhitRawProduct.create({ ...record, exclude_from_analysis: shouldExclude });
-      }
-      saved++;
-    } catch (err) {
-      console.error('שגיאה במוצר', p.item_code, err.message, err.stack);
-    }
-  }
-  console.log(`=== syncProducts END: fetched=${list.length} saved=${saved} ===`);
-  return { fetched: list.length, saved };
-}
-
-async function syncDocuments(base44, token) {
-  console.log('=== syncDocuments START ===');
-  const response = await rivhitPost('Document.List', { api_token: token, document_type: 1 });
-  const list = extractList(response, 'document_list');
-  console.log('documents to process:', list.length);
-
-  if (list.length === 0) {
-    console.log('no documents to sync');
-    return { fetched: 0, saved: 0 };
-  }
-
-  let saved = 0;
-  for (const d of list) {
-    try {
-      console.log('processing document:', d.document_id);
-      let existing = [];
-      try {
-        existing = await base44.asServiceRole.entities.RivhitRawDocument.list({ filter: { rivhit_document_id: d.document_id } });
-      } catch (filterErr) {
-        console.error('filter error:', filterErr.message);
-        existing = [];
-      }
-      const record = {
-        rivhit_document_id: d.document_id,
-        document_number: d.document_number ?? null,
-        document_type: d.document_type ?? null,
-        document_date: d.document_date ?? null,
-        rivhit_card_number: d.customer_id ?? null,
-        customer_name: d.customer_name ?? null,
-        total_before_vat: d.sum ?? null,
-        discount_amount: d.discount ?? null,
-        vat_amount: d.vat ?? null,
-        total_to_pay: d.total ?? null,
-        lines: d.document_lines ? JSON.stringify(d.document_lines) : null,
-        raw_json: typeof d === 'string' ? d : JSON.stringify(d),
-        synced_at: new Date().toISOString(),
-        sync_status: 'success',
-      };
-      if (existing && existing.length > 0) {
-        console.log('updating existing document:', existing[0].id);
-        await base44.asServiceRole.entities.RivhitRawDocument.update(existing[0].id, record);
-      } else {
-        console.log('creating new document:', d.document_id);
-        await base44.asServiceRole.entities.RivhitRawDocument.create(record);
-      }
-      saved++;
-    } catch (err) {
-      console.error('שגיאה במסמך', d.document_id, err.message, err.stack);
-    }
-  }
-  console.log(`=== syncDocuments END: fetched=${list.length} saved=${saved} ===`);
-  return { fetched: list.length, saved };
+  console.log(`[sync] === ${type} END: fetched=${list.length} saved=${saved} errors=${errors} ===`);
+  return { fetched: list.length, saved, errors };
 }
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
-    console.log('user:', user?.email, 'role:', user?.role);
-    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    if (user.role !== 'owner') return Response.json({ error: 'Admin only' }, { status: 403 });
+    console.log(`[sync] user=${user?.email} role=${user?.role}`);
+
+    if (!user) {
+      return Response.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+    }
 
     const body = await req.json();
-    const { sync_type = 'full' } = body;
-    console.log('sync_type:', sync_type);
+    const syncTypeParam = body.sync_type || 'full';
+    console.log(`[sync] sync_type=${syncTypeParam}`);
 
+    // Get API token
     const settingsList = await base44.asServiceRole.entities.RivhitSettings.list();
     const settings = settingsList?.[0];
     if (!settings?.api_token) {
-      return Response.json({ success: false, error: 'טוקן API לא מוגדר בהגדרות' }, { status: 400 });
+      return Response.json({ success: false, error: 'API token not configured' }, { status: 400 });
     }
-    console.log('api_token found, length:', settings.api_token.length);
 
-    // Create SyncLog
+    // Determine which types to sync
+    const types = syncTypeParam === 'full'
+      ? ['customers', 'products', 'documents']
+      : [syncTypeParam];
+
+    // Create sync log
     let logId = null;
     try {
-      const logRecord = await base44.asServiceRole.entities.SyncLog.create({
-        sync_type,
+      const log = await base44.asServiceRole.entities.SyncLog.create({
+        sync_type: syncTypeParam,
         status: 'running',
         started_at: new Date().toISOString(),
       });
-      logId = logRecord.id;
-      console.log('SyncLog created:', logId);
-    } catch (logErr) {
-      console.error('Failed to create SyncLog:', logErr.message);
+      logId = log.id;
+    } catch (err) {
+      console.error('[sync] failed to create SyncLog:', err.message);
     }
 
+    // Run sync
     let totalFetched = 0;
     let totalSaved = 0;
+    let totalErrors = 0;
+    const results = {};
 
-    try {
-      const types = sync_type === 'full' ? ['customers', 'products', 'documents'] : [sync_type];
-      console.log('syncing types:', types);
-
-      for (const type of types) {
-        console.log(`--- starting sync: ${type} ---`);
-        let result = { fetched: 0, saved: 0 };
-        if (type === 'customers') result = await syncCustomers(base44, settings.api_token);
-        else if (type === 'products') result = await syncProducts(base44, settings.api_token);
-        else if (type === 'documents') result = await syncDocuments(base44, settings.api_token);
-        else console.warn('unknown sync type:', type);
-        console.log(`--- finished sync: ${type}, fetched=${result.fetched} saved=${result.saved} ---`);
-
+    for (const type of types) {
+      try {
+        const result = await syncType(base44, settings.api_token, type);
+        results[type] = result;
         totalFetched += result.fetched;
         totalSaved += result.saved;
+        totalErrors += result.errors;
+      } catch (err) {
+        console.error(`[sync] ${type} failed:`, err.message);
+        results[type] = { fetched: 0, saved: 0, errors: 1, error: err.message };
+        totalErrors++;
       }
-
-      if (logId) {
-        await base44.asServiceRole.entities.SyncLog.update(logId, {
-          status: 'success',
-          records_fetched: totalFetched,
-          records_saved: totalSaved,
-          finished_at: new Date().toISOString(),
-        });
-      }
-
-      console.log(`=== SYNC COMPLETE: fetched=${totalFetched} saved=${totalSaved} ===`);
-      return Response.json({ success: true, records_fetched: totalFetched, records_saved: totalSaved });
-
-    } catch (syncErr) {
-      console.error('sync error:', syncErr.message, syncErr.stack);
-      if (logId) {
-        try {
-          await base44.asServiceRole.entities.SyncLog.update(logId, {
-            status: 'error',
-            records_fetched: totalFetched,
-            records_saved: totalSaved,
-            error_message: syncErr.message,
-            finished_at: new Date().toISOString(),
-          });
-        } catch (updateErr) {
-          console.error('Failed to update SyncLog on error:', updateErr.message);
-        }
-      }
-      return Response.json({ success: false, error: syncErr.message }, { status: 500 });
     }
 
+    // Update sync log
+    const status = totalErrors > 0 && totalSaved > 0 ? 'partial'
+      : totalErrors > 0 ? 'error'
+      : 'success';
+
+    if (logId) {
+      try {
+        await base44.asServiceRole.entities.SyncLog.update(logId, {
+          status,
+          records_fetched: totalFetched,
+          records_saved: totalSaved,
+          error_message: totalErrors > 0 ? `${totalErrors} errors` : null,
+          finished_at: new Date().toISOString(),
+        });
+      } catch (err) {
+        console.error('[sync] failed to update SyncLog:', err.message);
+      }
+    }
+
+    console.log(`[sync] DONE: fetched=${totalFetched} saved=${totalSaved} errors=${totalErrors}`);
+    return Response.json({
+      success: totalErrors === 0,
+      status,
+      records_fetched: totalFetched,
+      records_saved: totalSaved,
+      errors: totalErrors,
+      results,
+    });
+
   } catch (err) {
-    console.error('top-level error:', err.message, err.stack);
+    console.error('[sync] top-level error:', err.message, err.stack);
     return Response.json({ success: false, error: err.message }, { status: 500 });
   }
 });
