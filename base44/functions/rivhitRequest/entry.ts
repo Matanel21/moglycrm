@@ -29,7 +29,7 @@ Deno.serve(async (req) => {
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body: JSON.stringify({ token_api: settings.api_token, ...params }),
+      body: JSON.stringify({ api_token: settings.api_token, ...params }),
       signal: controller.signal,
     });
 
