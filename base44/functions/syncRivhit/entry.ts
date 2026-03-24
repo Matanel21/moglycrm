@@ -11,7 +11,7 @@ async function rivhitPost(endpoint, body) {
     body: JSON.stringify(body),
   });
   const text = await res.text();
-  console.log(`rivhitPost ${endpoint} status=${res.status} body=${text.substring(0, 300)}`);
+  console.log(`rivhitPost ${endpoint} status=${res.status} body=${text.substring(0, 500)}`);
   try {
     return JSON.parse(text);
   } catch (_) {
@@ -19,11 +19,57 @@ async function rivhitPost(endpoint, body) {
   }
 }
 
+function extractList(response, key) {
+  // Rivhit API returns: { data: { [key]: [...] }, error_code: 0 }
+  // Handle both response.data.[key] and response.[key] structures
+  console.log('extractList key:', key, 'response keys:', Object.keys(response || {}));
+  console.log('response.data type:', typeof response?.data, 'response.data keys:', Object.keys(response?.data || {}));
+
+  if (response?.error_code !== undefined && response.error_code !== 0) {
+    console.error(`Rivhit API error: error_code=${response.error_code}, error_message=${response.error_message || 'unknown'}`);
+    return [];
+  }
+
+  // Try response.data.[key] first (standard Rivhit structure)
+  const nested = response?.data?.[key];
+  if (Array.isArray(nested)) {
+    console.log(`found array at response.data.${key}, length=${nested.length}`);
+    return nested;
+  }
+
+  // Fallback: response.[key] directly
+  const direct = response?.[key];
+  if (Array.isArray(direct)) {
+    console.log(`found array at response.${key}, length=${direct.length}`);
+    return direct;
+  }
+
+  // Fallback: response.data is the array itself
+  if (Array.isArray(response?.data)) {
+    console.log(`found array at response.data, length=${response.data.length}`);
+    return response.data;
+  }
+
+  // Fallback: response is the array itself
+  if (Array.isArray(response)) {
+    console.log(`response is array, length=${response.length}`);
+    return response;
+  }
+
+  console.warn(`extractList: could not find array for key="${key}", returning empty`);
+  return [];
+}
+
 async function syncCustomers(base44, token) {
   console.log('=== syncCustomers START ===');
-  const data = await rivhitPost('Customer.List', { api_token: token });
-  const list = data?.customer_list || data?.CustomerList || data?.data || (Array.isArray(data) ? data : []);
-  console.log('customers fetched:', list.length);
+  const response = await rivhitPost('Customer.List', { api_token: token });
+  const list = extractList(response, 'customer_list');
+  console.log('customers to process:', list.length);
+
+  if (list.length === 0) {
+    console.log('no customers to sync');
+    return { fetched: 0, saved: 0 };
+  }
 
   let saved = 0;
   for (const c of list) {
@@ -33,7 +79,7 @@ async function syncCustomers(base44, token) {
       try {
         existing = await base44.asServiceRole.entities.RivhitRawCustomer.list({ filter: { rivhit_card_number: c.customer_id } });
       } catch (filterErr) {
-        console.error('filter error, trying without filter:', filterErr.message);
+        console.error('filter error:', filterErr.message);
         existing = [];
       }
       const record = {
@@ -72,9 +118,14 @@ async function syncCustomers(base44, token) {
 
 async function syncProducts(base44, token) {
   console.log('=== syncProducts START ===');
-  const data = await rivhitPost('Item.List', { api_token: token });
-  const list = data?.item_list || data?.ItemList || data?.data || (Array.isArray(data) ? data : []);
-  console.log('products fetched:', list.length);
+  const response = await rivhitPost('Item.List', { api_token: token });
+  const list = extractList(response, 'item_list');
+  console.log('products to process:', list.length);
+
+  if (list.length === 0) {
+    console.log('no products to sync');
+    return { fetched: 0, saved: 0 };
+  }
 
   let saved = 0;
   for (const p of list) {
@@ -88,7 +139,7 @@ async function syncProducts(base44, token) {
       try {
         existing = await base44.asServiceRole.entities.RivhitRawProduct.list({ filter: { rivhit_item_code: p.item_code } });
       } catch (filterErr) {
-        console.error('filter error, trying without filter:', filterErr.message);
+        console.error('filter error:', filterErr.message);
         existing = [];
       }
       const record = {
@@ -121,9 +172,14 @@ async function syncProducts(base44, token) {
 
 async function syncDocuments(base44, token) {
   console.log('=== syncDocuments START ===');
-  const data = await rivhitPost('Document.List', { api_token: token, document_type: 1 });
-  const list = data?.document_list || data?.DocumentList || data?.data || (Array.isArray(data) ? data : []);
-  console.log('documents fetched:', list.length);
+  const response = await rivhitPost('Document.List', { api_token: token, document_type: 1 });
+  const list = extractList(response, 'document_list');
+  console.log('documents to process:', list.length);
+
+  if (list.length === 0) {
+    console.log('no documents to sync');
+    return { fetched: 0, saved: 0 };
+  }
 
   let saved = 0;
   for (const d of list) {
@@ -133,7 +189,7 @@ async function syncDocuments(base44, token) {
       try {
         existing = await base44.asServiceRole.entities.RivhitRawDocument.list({ filter: { rivhit_document_id: d.document_id } });
       } catch (filterErr) {
-        console.error('filter error, trying without filter:', filterErr.message);
+        console.error('filter error:', filterErr.message);
         existing = [];
       }
       const record = {
@@ -209,11 +265,13 @@ Deno.serve(async (req) => {
       console.log('syncing types:', types);
 
       for (const type of types) {
+        console.log(`--- starting sync: ${type} ---`);
         let result = { fetched: 0, saved: 0 };
         if (type === 'customers') result = await syncCustomers(base44, settings.api_token);
         else if (type === 'products') result = await syncProducts(base44, settings.api_token);
         else if (type === 'documents') result = await syncDocuments(base44, settings.api_token);
         else console.warn('unknown sync type:', type);
+        console.log(`--- finished sync: ${type}, fetched=${result.fetched} saved=${result.saved} ---`);
 
         totalFetched += result.fetched;
         totalSaved += result.saved;
