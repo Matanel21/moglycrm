@@ -1,0 +1,69 @@
+{
+  "name": "Order",
+  "type": "object",
+  "properties": {
+    "customer_id": {
+      "type": "string",
+      "description": "\u05de\u05d6\u05d4\u05d4 \u05dc\u05e7\u05d5\u05d7"
+    },
+    "customer_name": {
+      "type": "string",
+      "description": "\u05e9\u05dd \u05d4\u05dc\u05e7\u05d5\u05d7"
+    },
+    "order_date": {
+      "type": "string",
+      "format": "date",
+      "description": "\u05ea\u05d0\u05e8\u05d9\u05da \u05d4\u05d6\u05de\u05e0\u05d4"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "\u05d8\u05d9\u05d5\u05d8\u05d4",
+        "\u05d0\u05d5\u05e9\u05e8\u05d4",
+        "\u05d1\u05d4\u05db\u05e0\u05d4",
+        "\u05e0\u05e9\u05dc\u05d7\u05d4",
+        "\u05e1\u05d5\u05e4\u05e7\u05d4",
+        "\u05d1\u05d5\u05d8\u05dc\u05d4"
+      ],
+      "default": "\u05d8\u05d9\u05d5\u05d8\u05d4",
+      "description": "\u05e1\u05d8\u05d8\u05d5\u05e1"
+    },
+    "items": {
+      "type": "array",
+      "description": "\u05e4\u05e8\u05d9\u05d8\u05d9\u05dd",
+      "items": {
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "string"
+          },
+          "product_name": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "number"
+          },
+          "unit_price": {
+            "type": "number"
+          },
+          "total": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "total_amount": {
+      "type": "number",
+      "description": "\u05e1\u05d4\"\u05db"
+    },
+    "notes": {
+      "type": "string",
+      "description": "\u05d4\u05e2\u05e8\u05d5\u05ea"
+    },
+    "delivery_address": {
+      "type": "string",
+      "description": "\u05db\u05ea\u05d5\u05d1\u05ea \u05dc\u05de\u05e9\u05dc\u05d5\u05d7"
+    }
+  },
+  "required": []
+}

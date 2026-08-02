@@ -1,0 +1,35 @@
+{
+  "name": "Contact",
+  "type": "object",
+  "properties": {
+    "customer_id": {
+      "type": "string",
+      "description": "\u05de\u05d6\u05d4\u05d4 \u05dc\u05e7\u05d5\u05d7"
+    },
+    "customer_name": {
+      "type": "string",
+      "description": "\u05e9\u05dd \u05d4\u05e2\u05e1\u05e7"
+    },
+    "full_name": {
+      "type": "string",
+      "description": "\u05e9\u05dd \u05de\u05dc\u05d0"
+    },
+    "role": {
+      "type": "string",
+      "description": "\u05ea\u05e4\u05e7\u05d9\u05d3"
+    },
+    "phone": {
+      "type": "string",
+      "description": "\u05d8\u05dc\u05e4\u05d5\u05df"
+    },
+    "email": {
+      "type": "string",
+      "description": "\u05d0\u05d9\u05de\u05d9\u05d9\u05dc"
+    },
+    "notes": {
+      "type": "string",
+      "description": "\u05d4\u05e2\u05e8\u05d5\u05ea"
+    }
+  },
+  "required": []
+}

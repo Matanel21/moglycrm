@@ -1,0 +1,31 @@
+{
+  "name": "RivhitSettings",
+  "type": "object",
+  "properties": {
+    "api_token": {
+      "type": "string",
+      "description": "\u05d8\u05d5\u05e7\u05df API \u05e9\u05dc \u05e8\u05d9\u05d5\u05d5\u05d7\u05d9\u05ea"
+    },
+    "base_url": {
+      "type": "string",
+      "description": "\u05db\u05ea\u05d5\u05d1\u05ea \u05d1\u05e1\u05d9\u05e1 \u05e9\u05dc \u05d4-API"
+    },
+    "endpoint_connection": {
+      "type": "string",
+      "description": "\u05e0\u05ea\u05d9\u05d1 \u05d1\u05d3\u05d9\u05e7\u05ea \u05d7\u05d9\u05d1\u05d5\u05e8"
+    },
+    "endpoint_customers": {
+      "type": "string",
+      "description": "\u05e0\u05ea\u05d9\u05d1 \u05dc\u05e7\u05d5\u05d7\u05d5\u05ea"
+    },
+    "endpoint_products": {
+      "type": "string",
+      "description": "\u05e0\u05ea\u05d9\u05d1 \u05de\u05d5\u05e6\u05e8\u05d9\u05dd"
+    },
+    "endpoint_documents": {
+      "type": "string",
+      "description": "\u05e0\u05ea\u05d9\u05d1 \u05de\u05e1\u05de\u05db\u05d9\u05dd"
+    }
+  },
+  "required": []
+}

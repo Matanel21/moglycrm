@@ -1,0 +1,107 @@
+{
+  "name": "RivhitRawCustomer",
+  "type": "object",
+  "properties": {
+    "rivhit_card_number": {
+      "type": "number",
+      "description": "\u05de\u05e1\u05e4\u05e8 \u05db\u05e8\u05d8\u05d9\u05e1 \u2014 \u05d4\u05de\u05d6\u05d4\u05d4 \u05d4\u05e8\u05d0\u05e9\u05d9 \u05de\u05e8\u05d9\u05d5\u05d5\u05d7\u05d9\u05ea"
+    },
+    "business_name": {
+      "type": "string",
+      "description": "\u05e9\u05dd \u05de\u05e9\u05e4\u05d7\u05d4/\u05e2\u05e1\u05e7"
+    },
+    "contact_name": {
+      "type": "string",
+      "description": "\u05e9\u05dd \u05e4\u05e8\u05d8\u05d9"
+    },
+    "street": {
+      "type": "string",
+      "description": "\u05e8\u05d7\u05d5\u05d1"
+    },
+    "city": {
+      "type": "string",
+      "description": "\u05e2\u05d9\u05e8"
+    },
+    "zipcode": {
+      "type": "string",
+      "description": "\u05de\u05d9\u05e7\u05d5\u05d3"
+    },
+    "phone": {
+      "type": "string",
+      "description": "\u05de\u05e1\u05e4\u05e8 \u05d8\u05dc\u05e4\u05d5\u05df"
+    },
+    "phone2": {
+      "type": "string",
+      "description": "\u05de\u05e1\u05e4\u05e8 \u05d8\u05dc\u05e4\u05d5\u05df \u05e0\u05d5\u05e1\u05e3"
+    },
+    "fax": {
+      "type": "string",
+      "description": "\u05de\u05e1\u05e4\u05e8 \u05e4\u05e7\u05e1"
+    },
+    "email": {
+      "type": "string",
+      "description": "\u05db\u05ea\u05d5\u05d1\u05ea \u05d3\u05d5\u05d0\u05dc"
+    },
+    "vat_number": {
+      "type": "string",
+      "description": "\u05e2\u05d5\u05e1\u05e7 \u05de\u05d5\u05e8\u05e9\u05d4"
+    },
+    "agent": {
+      "type": "string",
+      "description": "\u05e1\u05d5\u05db\u05df"
+    },
+    "customer_type": {
+      "type": "string",
+      "enum": [
+        "\u05d7\u05e0\u05d5\u05ea \u05d7\u05d9\u05d5\u05ea",
+        "\u05de\u05e1\u05e4\u05e8\u05ea \u05db\u05dc\u05d1\u05d9\u05dd",
+        "\u05de\u05e4\u05d9\u05e5",
+        "\u05d0\u05d7\u05e8"
+      ],
+      "description": "\u05e1\u05d5\u05d2 \u05dc\u05e7\u05d5\u05d7 (\u05e9\u05d3\u05d4 CRM \u05d1\u05dc\u05d1\u05d3)"
+    },
+    "price_list": {
+      "type": "string",
+      "enum": [
+        "\u05d7\u05e0\u05d5\u05ea",
+        "\u05de\u05e1\u05e4\u05e8\u05d4",
+        "\u05de\u05e4\u05d9\u05e5",
+        "\u05de\u05d9\u05d5\u05d7\u05d3"
+      ],
+      "description": "\u05e1\u05d5\u05d2 \u05de\u05d7\u05d9\u05e8\u05d5\u05df"
+    },
+    "private_label": {
+      "type": "boolean",
+      "description": "\u05d4\u05d0\u05dd \u05dc\u05e7\u05d5\u05d7 Private Label",
+      "default": false
+    },
+    "crm_notes": {
+      "type": "string",
+      "description": "\u05d4\u05e2\u05e8\u05d5\u05ea \u05e4\u05e0\u05d9\u05de\u05d9\u05d5\u05ea CRM (\u05dc\u05d0 \u05de\u05e8\u05d9\u05d5\u05d5\u05d7\u05d9\u05ea)"
+    },
+    "raw_json": {
+      "type": "object",
+      "description": "JSON \u05d2\u05d5\u05dc\u05de\u05d9 \u05de\u05e8\u05d9\u05d5\u05d5\u05d7\u05d9\u05ea"
+    },
+    "synced_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "\u05ea\u05d0\u05e8\u05d9\u05da \u05e1\u05e0\u05db\u05e8\u05d5\u05df \u05d0\u05d7\u05e8\u05d5\u05df"
+    },
+    "sync_status": {
+      "type": "string",
+      "enum": [
+        "success",
+        "error"
+      ],
+      "description": "\u05e1\u05d8\u05d8\u05d5\u05e1 \u05e1\u05e0\u05db\u05e8\u05d5\u05df"
+    },
+    "is_active": {
+      "type": "boolean",
+      "description": "\u05d4\u05d0\u05dd \u05dc\u05e7\u05d5\u05d7 \u05e4\u05e2\u05d9\u05dc"
+    }
+  },
+  "required": [
+    "rivhit_card_number"
+  ]
+}

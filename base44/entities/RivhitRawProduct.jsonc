@@ -1,0 +1,68 @@
+{
+  "name": "RivhitRawProduct",
+  "type": "object",
+  "properties": {
+    "rivhit_item_code": {
+      "type": "number",
+      "description": "\u05e7\u05d5\u05d3 \u05e4\u05e8\u05d9\u05d8 \u2014 \u05d4\u05de\u05d6\u05d4\u05d4 \u05d4\u05e8\u05d0\u05e9\u05d9 \u05de\u05e8\u05d9\u05d5\u05d5\u05d7\u05d9\u05ea"
+    },
+    "description": {
+      "type": "string",
+      "description": "\u05ea\u05d9\u05d0\u05d5\u05e8 \u05d4\u05de\u05d5\u05e6\u05e8"
+    },
+    "barcode": {
+      "type": "string",
+      "description": "\u05d1\u05e8\u05e7\u05d5\u05d3"
+    },
+    "price": {
+      "type": "number",
+      "description": "\u05de\u05d7\u05d9\u05e8"
+    },
+    "currency": {
+      "type": "string",
+      "description": "\u05de\u05d8\u05d1\u05e2"
+    },
+    "category": {
+      "type": "string",
+      "description": "\u05e7\u05d8\u05d2\u05d5\u05e8\u05d9\u05d4"
+    },
+    "exclude_from_analysis": {
+      "type": "boolean",
+      "description": "\u05d4\u05d0\u05dd \u05dc\u05d4\u05d5\u05e6\u05d9\u05d0 \u05de\u05e0\u05d9\u05ea\u05d5\u05d7\u05d9\u05dd (\u05de\u05dc\u05dc \u05d7\u05d5\u05e4\u05e9\u05d9, \u05de\u05e9\u05dc\u05d5\u05d7, \u05d4\u05e0\u05d7\u05d4 \u05d5\u05db\u05d5')",
+      "default": false
+    },
+    "stock_quantity": {
+      "type": "number",
+      "description": "\u05db\u05de\u05d5\u05ea \u05d1\u05de\u05dc\u05d0\u05d9 \u05e0\u05d5\u05db\u05d7\u05d9\u05ea"
+    },
+    "stock_minimum": {
+      "type": "number",
+      "description": "\u05de\u05dc\u05d0\u05d9 \u05de\u05d9\u05e0\u05d9\u05de\u05d5\u05dd \u05dc\u05d4\u05ea\u05e8\u05d0\u05d4"
+    },
+    "stock_last_updated": {
+      "type": "string",
+      "format": "date",
+      "description": "\u05ea\u05d0\u05e8\u05d9\u05da \u05e2\u05d3\u05db\u05d5\u05df \u05de\u05dc\u05d0\u05d9 \u05d0\u05d7\u05e8\u05d5\u05df"
+    },
+    "raw_json": {
+      "type": "object",
+      "description": "JSON \u05d2\u05d5\u05dc\u05de\u05d9 \u05de\u05e8\u05d9\u05d5\u05d5\u05d7\u05d9\u05ea"
+    },
+    "synced_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "\u05ea\u05d0\u05e8\u05d9\u05da \u05e1\u05e0\u05db\u05e8\u05d5\u05df \u05d0\u05d7\u05e8\u05d5\u05df"
+    },
+    "sync_status": {
+      "type": "string",
+      "enum": [
+        "success",
+        "error"
+      ],
+      "description": "\u05e1\u05d8\u05d8\u05d5\u05e1 \u05e1\u05e0\u05db\u05e8\u05d5\u05df"
+    }
+  },
+  "required": [
+    "rivhit_item_code"
+  ]
+}
