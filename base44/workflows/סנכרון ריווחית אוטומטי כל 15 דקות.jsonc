@@ -1,0 +1,46 @@
+{
+  "name": "\u05e1\u05e0\u05db\u05e8\u05d5\u05df \u05e8\u05d9\u05d5\u05d5\u05d7\u05d9\u05ea \u05d0\u05d5\u05d8\u05d5\u05de\u05d8\u05d9 \u05db\u05dc 15 \u05d3\u05e7\u05d5\u05ea",
+  "description": "",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "interval",
+      "cron_expression": null,
+      "one_time_date": null,
+      "timezone": "UTC",
+      "interval_value": 15,
+      "interval_unit": "minutes",
+      "interval_anchor": "2026-03-22T17:31:26.658000",
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "15",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "syncRivhit",
+            "args": {
+              "sync_type": "full"
+            }
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "syncRivhit"
+  }
+}
